@@ -15,7 +15,6 @@ unmanagedResourceDirectories in Test <+= baseDirectory(_ / "target/web/public/te
 
 resolvers ++= Seq(
   Resolver.typesafeRepo("releases"), Resolver.bintrayRepo("scalaz", "releases")
-//  "ReactiveCouchbase" at "https://raw.github.com/ReactiveCouchbase/repository/master/snapshots"
 )
 
 libraryDependencies ++= Seq(
@@ -27,7 +26,6 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.3",
   "com.ning" % "async-http-client" % "1.9.30",
   "com.typesafe" % "config" % "1.3.0",
-//  "org.specs2" %% "specs2" % "3.3.1" % "test" cross CrossVersion.binary,
   "com.codahale.metrics" % "metrics-core" % "3.0.2"
 )
 
