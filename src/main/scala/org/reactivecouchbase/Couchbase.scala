@@ -162,17 +162,11 @@ class CouchbaseBucket( private[reactivecouchbase] val cbDriver: ReactiveCouchbas
    */
   private[reactivecouchbase] val config: AsyncHttpClientConfig = new AsyncHttpClientConfig.Builder()
     .setAllowPoolingConnections(cbDriver.configuration.getBoolean("couchbase.http.pool").getOrElse(true))
-//    .setCompressionEnabled(cbDriver.configuration.getBoolean("couchbase.http.compression").getOrElse(true))
     .setCompressionEnforced(cbDriver.configuration.getBoolean("couchbase.http.compression").getOrElse(true))
-//    .setRequestTimeoutInMs(cbDriver.configuration.getInt("couchbase.http.reqtimeout").getOrElse(60000))
     .setRequestTimeout(cbDriver.configuration.getInt("couchbase.http.reqtimeout").getOrElse(6))
-//    .setIdleConnectionInPoolTimeoutInMs(cbDriver.configuration.getInt("couchbase.http.idlepool").getOrElse(60000))
     .setPooledConnectionIdleTimeout(cbDriver.configuration.getInt("couchbase.http.idlepool").getOrElse(6))
-//    .setIdleConnectionTimeoutInMs(cbDriver.configuration.getInt("couchbase.http.idleconnection").getOrElse(60000))
     .setConnectTimeout(cbDriver.configuration.getInt("couchbase.http.idleconnection").getOrElse(6))
-//    .setMaximumConnectionsTotal(cbDriver.configuration.getInt("couchbase.http.maxTotalConnections").getOrElse(-1))
     .setMaxConnections(cbDriver.configuration.getInt("couchbase.http.maxTotalConnections").getOrElse(-1))
-//    .setMaximumConnectionsPerHost(cbDriver.configuration.getInt("couchbase.http.maxConnectionsPerHost").getOrElse(-1))
     .setMaxConnectionsPerHost(cbDriver.configuration.getInt("couchbase.http.maxConnectionsPerHost").getOrElse(-1))
     .build()
 

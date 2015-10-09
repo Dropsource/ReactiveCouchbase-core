@@ -1,11 +1,11 @@
+import org.reactivecouchbase.CouchbaseRWImplicits.{documentAsJsObjectReader, jsObjectToDocumentWriter}
 import org.reactivecouchbase.ReactiveCouchbaseDriver
-import org.reactivecouchbase.CouchbaseRWImplicits.documentAsJsObjectReader
-import org.reactivecouchbase.CouchbaseRWImplicits.jsObjectToDocumentWriter
-import org.specs2.mutable.{Tags, Specification}
+import org.specs2.mutable.Specification
 import play.api.libs.json.{JsObject, Json}
-import scala.concurrent.{Await}
 
-class AliasSpec extends Specification with Tags {
+import scala.concurrent.Await
+
+class AliasSpec extends Specification {
   sequential
 
   import Utils._

@@ -1,13 +1,14 @@
 import java.util.concurrent.atomic.AtomicInteger
+
+import akka.pattern.after
 import org.reactivecouchbase.ReactiveCouchbaseDriver
 import org.specs2.mutable._
 import play.api.libs.iteratee.{Enumerator, Iteratee}
-import play.api.libs.json.Json
+
 import scala.concurrent._
 import scala.concurrent.duration._
-import akka.pattern.after
 
-class CappedSpec extends Specification with Tags {
+class CappedSpec extends Specification {
   sequential
 
   import Utils._
@@ -18,7 +19,7 @@ You need to start a Couchbase server with a 'default' bucket on standard port to
 
   val driver = ReactiveCouchbaseDriver()
   val b = driver.bucket("default")
-  val bucket = driver.cappedBucket("default", 100, false)
+  val bucket = driver.cappedBucket("default", 100, reaper = false)
   val personsAndKeys1 = List(
     ("person-1", Person("John", "Doe", 42)),
     ("person-2", Person("Jane", "Doe", 42)),

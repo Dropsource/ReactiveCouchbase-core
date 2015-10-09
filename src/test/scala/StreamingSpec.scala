@@ -1,11 +1,10 @@
 import org.reactivecouchbase.ReactiveCouchbaseDriver
 import org.specs2.mutable._
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.Json
-import scala.concurrent._
-import scala.concurrent.duration._
 
-class StreamingSpec extends Specification with Tags {
+import scala.concurrent._
+
+class StreamingSpec extends Specification {
   sequential
 
   import Utils._

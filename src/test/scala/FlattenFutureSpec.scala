@@ -1,10 +1,13 @@
 import java.util.concurrent.TimeUnit
-import org.specs2.execute.Result
-import org.specs2.mutable.{Tags, Specification}
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Await, Future}
 
-class FlattenFutureSpec extends Specification with Tags {
+import org.specs2.execute.Result
+import org.specs2.main.CommandLine
+import org.specs2.mutable.Specification
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+
+class FlattenFutureSpec extends Specification {
   sequential
 
   import org.reactivecouchbase.implicits.flatfutures._
@@ -13,10 +16,11 @@ class FlattenFutureSpec extends Specification with Tags {
   val failedFuture: Future[Option[String]] = Future.successful(None)
   implicit val ec = ExecutionContext.Implicits.global
 
-  def successIfSuccess[A](value: A) = new org.specs2.execute.AsResult[Future[A]] {
-    def asResult(t: => Future[A]): Result = {
+  def successIfSuccess[A](value: A) = new org.specs2.main.CommandLineAsResult[Future[A]] {
+
+    def asResult(commandLine: CommandLine, r: => Future[A]): Result = {
       try {
-        val res: A = Await.result(t, Duration(10, TimeUnit.SECONDS))
+        val res: A = Await.result(r, Duration(10, TimeUnit.SECONDS))
         (value shouldEqual res).toResult
       } catch {
         case e: Throwable => failure("Future failed")
@@ -24,10 +28,10 @@ class FlattenFutureSpec extends Specification with Tags {
     }
   }
 
-  def successIfFail() = new org.specs2.execute.AsResult[Future[String]] {
-    def asResult(t: => Future[String]): Result = {
+  def successIfFail() = new org.specs2.main.CommandLineAsResult[Future[String]] {
+    def asResult(commandLine: CommandLine, r: => Future[String]): Result = {
       try {
-        Await.result(t, Duration(10, TimeUnit.SECONDS))
+        Await.result(r, Duration(10, TimeUnit.SECONDS))
         failure("Future is successful")
       } catch {
         case EmptyOption => success

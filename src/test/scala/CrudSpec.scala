@@ -1,11 +1,12 @@
 import java.util.concurrent.TimeUnit
+
 import org.reactivecouchbase.ReactiveCouchbaseDriver
 import org.specs2.mutable._
-import play.api.libs.json.Json
+
 import scala.concurrent._
 import scala.concurrent.duration._
 
-class BulkSpec extends Specification with Tags {
+class BulkSpec extends Specification {
   sequential
 
   import Utils._
@@ -111,7 +112,7 @@ You need to start a Couchbase server with a 'default' bucket on standard port to
   }
 }
 
-class CrudSpec extends Specification with Tags {
+class CrudSpec extends Specification {
   sequential
 
   import Utils._

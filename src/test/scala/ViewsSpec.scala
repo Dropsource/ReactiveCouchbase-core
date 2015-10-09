@@ -1,12 +1,13 @@
-import com.couchbase.client.protocol.views.{Stale, Query}
-import org.reactivecouchbase.experimental.{TypedViewRow, Views}
+import com.couchbase.client.protocol.views.{Query, Stale}
 import org.reactivecouchbase.ReactiveCouchbaseDriver
+import org.reactivecouchbase.experimental.{TypedViewRow, Views}
 import org.specs2.mutable._
 import play.api.libs.iteratee.Iteratee
 import play.api.libs.json.Json
+
 import scala.concurrent._
 
-class ViewsSpec extends Specification with Tags {
+class ViewsSpec extends Specification {
   sequential
 
   import Utils._

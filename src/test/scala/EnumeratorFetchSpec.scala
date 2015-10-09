@@ -1,12 +1,12 @@
-import org.reactivecouchbase.{CouchbaseRWImplicits, ReactiveCouchbaseDriver}
 import org.reactivecouchbase.CouchbaseRWImplicits.documentAsJsObjectReader
-import org.reactivecouchbase.CouchbaseRWImplicits.jsObjectToDocumentWriter
-import org.specs2.mutable.{Tags, Specification}
+import org.reactivecouchbase.ReactiveCouchbaseDriver
+import org.specs2.mutable.Specification
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.{JsArray, JsObject, Json}
-import scala.concurrent.{ExecutionContext, Await}
+import play.api.libs.json.JsObject
 
-class EnumeratorFetchSpec extends Specification with Tags {
+import scala.concurrent.Await
+
+class EnumeratorFetchSpec extends Specification {
   sequential
 
   import Utils._

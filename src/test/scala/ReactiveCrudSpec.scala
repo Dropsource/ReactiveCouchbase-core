@@ -1,18 +1,19 @@
 import java.util.concurrent.TimeUnit
-import org.reactivecouchbase.crud.ReactiveCRUD
-import org.reactivecouchbase.ReactiveCouchbaseDriver
-import org.specs2.mutable.{Tags, Specification}
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 import Utils._
+import org.reactivecouchbase.ReactiveCouchbaseDriver
+import org.reactivecouchbase.crud.ReactiveCRUD
+import org.specs2.mutable.Specification
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 object BeerCRUD extends ReactiveCRUD[Beer] {
   val driver = ReactiveCouchbaseDriver()
   def bucket = driver.bucket("default")
 }
 
-class ReactiveCrudSpec extends Specification with Tags {
+class ReactiveCrudSpec extends Specification {
   sequential
 
   val timeout = Duration(10, TimeUnit.SECONDS)

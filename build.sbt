@@ -14,8 +14,8 @@ fork in Test := false
 unmanagedResourceDirectories in Test <+= baseDirectory(_ / "target/web/public/test")
 
 resolvers ++= Seq(
-  Resolver.typesafeRepo("releases"), Resolver.bintrayRepo("scalaz", "releases"),
-  "ReactiveCouchbase" at "https://raw.github.com/ReactiveCouchbase/repository/master/snapshots"
+  Resolver.typesafeRepo("releases"), Resolver.bintrayRepo("scalaz", "releases")
+//  "ReactiveCouchbase" at "https://raw.github.com/ReactiveCouchbase/repository/master/snapshots"
 )
 
 libraryDependencies ++= Seq(
@@ -23,10 +23,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.3.12" cross CrossVersion.binary,
   "com.typesafe.play" %% "play-iteratees" % "2.4.3" cross CrossVersion.binary,
   "com.typesafe.play" %% "play-json" % "2.4.3" cross CrossVersion.binary,
+  "com.typesafe.play" %% "play-specs2" % "2.4.3" % "test" cross CrossVersion.binary,
   "ch.qos.logback" % "logback-classic" % "1.1.3",
   "com.ning" % "async-http-client" % "1.9.30",
   "com.typesafe" % "config" % "1.3.0",
-  "org.specs2" %% "specs2" % "3.3.1" % "test" cross CrossVersion.binary,
+//  "org.specs2" %% "specs2" % "3.3.1" % "test" cross CrossVersion.binary,
   "com.codahale.metrics" % "metrics-core" % "3.0.2"
 )
 

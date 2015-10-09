@@ -1,12 +1,11 @@
-import org.reactivecouchbase.CouchbaseRWImplicits.jsObjectToDocumentWriter
 import org.reactivecouchbase.ReactiveCouchbaseDriver
-import org.specs2.mutable.{Specification, Tags}
-import play.api.libs.json.{JsValue, JsObject, Json}
+import org.specs2.mutable.Specification
+import play.api.libs.json.JsValue
 
-import scala.concurrent.{Future, Await}
-import scala.util.{Success, Failure}
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success}
 
-class NonExistentSpec extends Specification with Tags {
+class NonExistentSpec extends Specification {
   sequential
 
   import Utils._

@@ -1,11 +1,10 @@
-import com.couchbase.client.protocol.views.{ComplexKey, Stale, Query}
+import com.couchbase.client.protocol.views.{ComplexKey, Query, Stale}
 import org.reactivecouchbase.ReactiveCouchbaseDriver
 import org.specs2.mutable._
-import play.api.libs.json.Json
-import scala.concurrent._
-import scala.concurrent.duration._
 
-class SearchSpec extends Specification with Tags {
+import scala.concurrent._
+
+class SearchSpec extends Specification {
   sequential
 
   import Utils._

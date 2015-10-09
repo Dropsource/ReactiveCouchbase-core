@@ -1,11 +1,9 @@
 import org.reactivecouchbase.ReactiveCouchbaseDriver
-import org.reactivecouchbase.CouchbaseRWImplicits.documentAsJsObjectReader
-import org.specs2.mutable.{Tags, Specification}
-import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.JsObject
+import org.specs2.mutable.Specification
+
 import scala.concurrent.Await
 
-class CounterSpec extends Specification with Tags {
+class CounterSpec extends Specification {
   sequential
 
   import Utils._

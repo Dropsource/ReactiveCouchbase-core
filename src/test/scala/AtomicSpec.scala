@@ -1,12 +1,13 @@
+import akka.pattern.after
+import org.reactivecouchbase.CouchbaseExpiration._
 import org.reactivecouchbase.ReactiveCouchbaseDriver
 import org.specs2.mutable._
+
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
-import akka.pattern.after
-import org.reactivecouchbase.CouchbaseExpiration._
 
-class AtomicSpec extends Specification with Tags {
+class AtomicSpec extends Specification {
   sequential
 
   import Utils._
