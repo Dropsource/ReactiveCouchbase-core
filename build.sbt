@@ -52,14 +52,3 @@ pomExtra := (
         <url>https://github.com/mathieuancelin</url>
       </developer>
     </developers>)
-
-
-publishTo := {
-  val dropsource = "http://repo.dropsource.biz:8081/"
-  if (isSnapshot.value)
-    Some("snapshots" at dropsource + "artifactory/scala-snapshots")
-  else
-    Some("releases"  at dropsource + "artifactory/scala-releases")
-}
-
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
