@@ -81,7 +81,7 @@ trait Read {
     QueryEnumerator(() => rawFetch(keysEnumerator)(bucket, ec).toEnumerator.map { enumerator =>
       enumerator &> Enumeratee.map[(String, String)]( t => (t._1, r.reads(Json.parse(t._2))) ) &> Enumeratee.collect[(String, JsResult[T])] {
         case (k: String, JsSuccess(value, _)) => (k, value)
-        case (k: String, JsError(errors)) if bucket.jsonStrictValidation => throw new JsonValidationException("Invalid JSON content", JsError.toFlatJson(errors))
+        case (k: String, JsError(errors)) if bucket.jsonStrictValidation => throw new JsonValidationException("Invalid JSON content", JsError.toJson(errors))
       }
     })
   }
@@ -152,7 +152,7 @@ trait Read {
       case _ if !bucket.failWithNonStringDoc => None
     } map {
       case Some(JsSuccess(value, _)) => Some(value)
-      case Some(JsError(errors)) if bucket.jsonStrictValidation => throw new JsonValidationException("Invalid JSON content", JsError.toFlatJson(errors))
+      case Some(JsError(errors)) if bucket.jsonStrictValidation => throw new JsonValidationException("Invalid JSON content", JsError.toJson(errors))
       case None => None
     }
   }
