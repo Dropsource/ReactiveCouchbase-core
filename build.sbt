@@ -6,7 +6,7 @@ isSnapshot := true
 
 version := "0.5"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 // Allow debugging during tests
 fork in Test := false
@@ -18,11 +18,11 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.couchbase.client" % "couchbase-client" % "1.4.10",
+  "com.couchbase.client" % "couchbase-client" % "1.4.11",
   "com.typesafe.akka" %% "akka-actor" % "2.3.12" cross CrossVersion.binary,
-  "com.typesafe.play" %% "play-iteratees" % "2.4.3" cross CrossVersion.binary,
-  "com.typesafe.play" %% "play-json" % "2.4.3" cross CrossVersion.binary,
-  "com.typesafe.play" %% "play-specs2" % "2.4.3" % "test" cross CrossVersion.binary,
+  "com.typesafe.play" %% "play-iteratees" % "2.4.6" cross CrossVersion.binary,
+  "com.typesafe.play" %% "play-json" % "2.4.6" cross CrossVersion.binary,
+  "com.typesafe.play" %% "play-specs2" % "2.4.6" % "test" cross CrossVersion.binary,
   "ch.qos.logback" % "logback-classic" % "1.1.3",
   "com.ning" % "async-http-client" % "1.9.30",
   "com.typesafe" % "config" % "1.3.0",

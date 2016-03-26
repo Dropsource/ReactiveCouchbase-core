@@ -69,7 +69,7 @@ class QueryEnumerator[T](futureEnumerator: () => Future[Enumerator[T]]) {
   def toEnumerator: Future[Enumerator[T]] = futureEnumerator()
 
   /**
-   * 
+   *
    * @param ec ExecutionContext for async processing
    * @return the query result as enumerator
    */
@@ -86,7 +86,7 @@ class QueryEnumerator[T](futureEnumerator: () => Future[Enumerator[T]]) {
     futureEnumerator().flatMap(_(Iteratee.getChunks[T]).flatMap(_.run))
 
   /**
-   * 
+   *
    * @param ec ExecutionContext for async processing
    * @return the optinal head
    */
@@ -174,13 +174,13 @@ trait Queries {
     } else {
       QueryEnumerator(() => waitForHttp[ViewResponse]( bucket.couchbaseClient.asyncQuery(view, query), bucket, ec ).map { results =>
         Enumerator.enumerate(results.iterator()) &> Enumeratee.map[ViewRow] {
-          case r: ViewRowWithDocs if query.willIncludeDocs() => RawRow(Some(r.getDocument.asInstanceOf[String]), Some(r.getId), r.getKey, r.getValue)
-          case r: ViewRowWithDocs if !query.willIncludeDocs() => RawRow(None, Some(r.getId), r.getKey, r.getValue)
-          case r: ViewRowNoDocs => RawRow(None, Some(r.getId), r.getKey, r.getValue)
+          case r: ViewRowWithDocs if query.willIncludeDocs() => RawRow(Option(r.getDocument.asInstanceOf[String]), Option(r.getId), r.getKey, r.getValue)
+          case r: ViewRowWithDocs if !query.willIncludeDocs() => RawRow(None, Option(r.getId), r.getKey, r.getValue)
+          case r: ViewRowNoDocs => RawRow(None, Option(r.getId), r.getKey, r.getValue)
           case r: ViewRowReduced => RawRow(None, None, r.getKey, r.getValue)
-          case r: SpatialViewRowNoDocs => RawRow(None, Some(r.getId), r.getKey, r.getValue)
-          case r: SpatialViewRowWithDocs if query.willIncludeDocs() => RawRow(Some(r.getDocument.asInstanceOf[String]), Some(r.getId), r.getKey, r.getValue)
-          case r: SpatialViewRowWithDocs if !query.willIncludeDocs() => RawRow(None, Some(r.getId), r.getKey, r.getValue)
+          case r: SpatialViewRowNoDocs => RawRow(None, Option(r.getId), r.getKey, r.getValue)
+          case r: SpatialViewRowWithDocs if query.willIncludeDocs() => RawRow(Option(r.getDocument.asInstanceOf[String]), Option(r.getId), r.getKey, r.getValue)
+          case r: SpatialViewRowWithDocs if !query.willIncludeDocs() => RawRow(None, Option(r.getId), r.getKey, r.getValue)
         }
       })
     }
@@ -222,8 +222,12 @@ trait Queries {
     QueryEnumerator(() => rawSearch(view)(query)(bucket, ec).toEnumerator.map { enumerator =>
       enumerator &>
         Enumeratee.map[RawRow] { row =>
-          row.document.map { doc =>
-            JsRow[T](r.reads(Json.parse(doc)), row.id, row.key, row.value)
+          row.document.flatMap { doc =>
+            if (doc != null) {
+              Some(JsRow[T](r.reads(Json.parse(doc)), row.id, row.key, row.value))
+            } else {
+              None
+            }
           }.getOrElse(
             JsRow[T](JsError(), row.id, row.key, row.value)
           )
