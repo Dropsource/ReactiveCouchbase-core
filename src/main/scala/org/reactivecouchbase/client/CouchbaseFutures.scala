@@ -126,7 +126,7 @@ private[reactivecouchbase] object CouchbaseFutures {
 
   /**
    *
-   * Transform an GetFuture to a Future[T]
+   * Transform a GetFuture to a Future[T]
    *
    * @param future the Java Driver Future
    * @param b the bucket to use

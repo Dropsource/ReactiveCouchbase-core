@@ -4,7 +4,7 @@ organization := "org.reactivecouchbase"
 
 isSnapshot := true
 
-version := "0.5"
+version := "0.6-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
@@ -19,19 +19,21 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "com.couchbase.client" % "couchbase-client" % "1.4.11",
-  "com.typesafe.akka" %% "akka-actor" % "2.3.12" cross CrossVersion.binary,
-  "com.typesafe.play" %% "play-iteratees" % "2.4.6" cross CrossVersion.binary,
-  "com.typesafe.play" %% "play-json" % "2.4.6" cross CrossVersion.binary,
-  "com.typesafe.play" %% "play-specs2" % "2.4.6" % "test" cross CrossVersion.binary,
+  "com.couchbase.client" % "java-client" % "2.2.6",
+  "com.typesafe.akka" %% "akka-actor" % "2.4.3",
+  "com.typesafe.play" %% "play-iteratees" % "2.4.6",
+  "com.typesafe.play" %% "play-json" % "2.4.6",
+  "com.typesafe.play" %% "play-specs2" % "2.4.6" % "test",
   "ch.qos.logback" % "logback-classic" % "1.1.3",
-  "com.ning" % "async-http-client" % "1.9.30",
+  "com.ning" % "async-http-client" % "1.9.38",
   "com.typesafe" % "config" % "1.3.0",
-  "com.codahale.metrics" % "metrics-core" % "3.0.2"
+  "com.codahale.metrics" % "metrics-core" % "3.0.2",
+  "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 )
 
-publishMavenStyle := true
+/*publishMavenStyle := true
 publishArtifact in Test := false
-pomIncludeRepository := { _ => false }
+pomIncludeRepository := { _ => false }*/
 pomExtra := (
   <url>http://reactivecouchbase.org</url>
     <licenses>
@@ -52,3 +54,24 @@ pomExtra := (
         <url>https://github.com/mathieuancelin</url>
       </developer>
     </developers>)
+
+val dropsource = "http://repo.dropsource.biz:8081/"
+
+publishMavenStyle := true
+
+isSnapshot := true
+
+homepage := Some(url("https://bitbucket.org/dropsource/scala-services"))
+
+publishTo := {
+  if (isSnapshot.value)
+    Some("snapshots" at dropsource + "artifactory/scala-snapshots")
+  else
+    Some("releases" at dropsource + "artifactory/scala-releases")
+}
+
+pomIncludeRepository := { _ => false }
+
+publishArtifact in Test := false
+
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")

@@ -1,17 +1,13 @@
 import org.reactivecouchbase.ReactiveCouchbaseDriver
+import org.scalatest.{BeforeAndAfterAll, MustMatchers, WordSpec}
 import org.specs2.mutable._
 import play.api.libs.iteratee.Enumerator
 
 import scala.concurrent._
 
-class StreamingSpec extends Specification {
-  sequential
+class StreamingSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
 
   import Utils._
-
-  """
-You need to start a Couchbase server with a 'default' bucket on standard port to run those tests ...
-  """ in ok
 
   val driver = ReactiveCouchbaseDriver()
   val bucket = driver.bucket("default")

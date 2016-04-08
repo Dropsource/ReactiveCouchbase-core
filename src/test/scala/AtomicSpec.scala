@@ -1,11 +1,11 @@
 import akka.pattern.after
-import org.reactivecouchbase.CouchbaseExpiration._
+import com.couchbase.client.java.document.json.JsonObject
 import org.reactivecouchbase.ReactiveCouchbaseDriver
 import org.specs2.mutable._
 
 import scala.concurrent._
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+import scala.util.{Try, Failure, Success}
 
 class AtomicSpec extends Specification {
   sequential
@@ -74,9 +74,8 @@ You need to start a Couchbase server with a 'default' bucket on standard port to
     "set key \"" + tk + "\" in default bucket" in {
 
       val tv = new TestValue("testValue", 42, List())
-      val s = bucket.set[TestValue](tk, tv, Duration(2, "hours"))
-      Await.result(s, Duration(20000, "millis")).isSuccess must equalTo(true)
-
+      lazy val s = Await.result(bucket.set[TestValue, JsonObject](tk, tv), Duration(20000, "millis"))
+      Try(s).isSuccess must equalTo(true)
     }
 
     "lock the key \"" + tk + "\" in default bucket" in {

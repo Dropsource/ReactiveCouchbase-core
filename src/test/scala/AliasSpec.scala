@@ -1,3 +1,4 @@
+import com.couchbase.client.java.document.json.JsonObject
 import org.reactivecouchbase.CouchbaseRWImplicits.{documentAsJsObjectReader, jsObjectToDocumentWriter}
 import org.reactivecouchbase.ReactiveCouchbaseDriver
 import org.specs2.mutable.Specification
@@ -21,7 +22,7 @@ You need to start a Couchbase server with a 'default' bucket on standard port to
   "ReactiveCouchbase aliases" should {
 
     "insert data in default bucket" in {
-      Await.result(bucketDefault.set[JsObject]("alias-key", Json.obj("hello" -> "world")), timeout)
+      Await.result(bucketDefault.set[JsObject, JsonObject]("alias-key", Json.obj("hello" -> "world")), timeout)
       success
     }
 
