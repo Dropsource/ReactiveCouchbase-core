@@ -9,10 +9,11 @@ import com.ning.http.client.{AsyncHttpClient, AsyncHttpClientConfig}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.reactivecouchbase.client._
 import org.reactivecouchbase.observables._
+import rx.lang.scala.JavaConversions._
 
 import scala.collection.JavaConversions._
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
 
 /**
   *
@@ -31,7 +32,9 @@ class CouchbaseBucket(private[reactivecouchbase] val cbDriver: ReactiveCouchbase
                       val timeout: Long) extends BucketAPI {
 
   lazy val client =
-    Await.result(cluster.openBucket(bucketName, pass).toFuture, Duration(10, TimeUnit.SECONDS))
+    toScalaObservable(cluster.openBucket(bucketName, pass))
+    .toFuture
+    .await(Duration(10, TimeUnit.SECONDS))
 
   def logger = cbDriver.logger
 
@@ -42,7 +45,9 @@ class CouchbaseBucket(private[reactivecouchbase] val cbDriver: ReactiveCouchbase
     * @return the disconnected CouchbaseBucket
     */
   def disconnect() =
-    Await.result(client.close().toFuture, Duration(10, TimeUnit.SECONDS))
+    toScalaObservable(client.close())
+    .toFuture
+    .await(Duration(10, TimeUnit.SECONDS))
 
   /**
     * @return the actual ReactiveCouchbaseDriver
@@ -89,15 +94,16 @@ class CouchbaseBucket(private[reactivecouchbase] val cbDriver: ReactiveCouchbase
   /**
     * Configuration for HTTP client
     */
-  private[reactivecouchbase] val config: AsyncHttpClientConfig = new AsyncHttpClientConfig.Builder()
-                                                                 .setAllowPoolingConnections(cbDriver.configuration.getBoolean("couchbase.http.pool").getOrElse(true))
-                                                                 .setCompressionEnforced(cbDriver.configuration.getBoolean("couchbase.http.compression").getOrElse(true))
-                                                                 .setRequestTimeout(cbDriver.configuration.getInt("couchbase.http.reqtimeout").getOrElse(6))
-                                                                 .setPooledConnectionIdleTimeout(cbDriver.configuration.getInt("couchbase.http.idlepool").getOrElse(6))
-                                                                 .setConnectTimeout(cbDriver.configuration.getInt("couchbase.http.idleconnection").getOrElse(6))
-                                                                 .setMaxConnections(cbDriver.configuration.getInt("couchbase.http.maxTotalConnections").getOrElse(-1))
-                                                                 .setMaxConnectionsPerHost(cbDriver.configuration.getInt("couchbase.http.maxConnectionsPerHost").getOrElse(-1))
-                                                                 .build()
+  private[reactivecouchbase] val config: AsyncHttpClientConfig =
+    new AsyncHttpClientConfig.Builder()
+    .setAllowPoolingConnections(cbDriver.configuration.getBoolean("couchbase.http.pool").getOrElse(true))
+    .setCompressionEnforced(cbDriver.configuration.getBoolean("couchbase.http.compression").getOrElse(true))
+    .setRequestTimeout(cbDriver.configuration.getInt("couchbase.http.reqtimeout").getOrElse(6))
+    .setPooledConnectionIdleTimeout(cbDriver.configuration.getInt("couchbase.http.idlepool").getOrElse(6))
+    .setConnectTimeout(cbDriver.configuration.getInt("couchbase.http.idleconnection").getOrElse(6))
+    .setMaxConnections(cbDriver.configuration.getInt("couchbase.http.maxTotalConnections").getOrElse(-1))
+    .setMaxConnectionsPerHost(cbDriver.configuration.getInt("couchbase.http.maxConnectionsPerHost").getOrElse(-1))
+    .build()
 
   /**
     * The HTTP client dedicated for this bucket (used for view queries and N1QL support)
@@ -216,30 +222,30 @@ class ReactiveCouchbaseDriver(as: ActorSystem, config: Configuration, log: Logge
     }
   }
 
-//  /**
-//    *
-//    * Provide a Bucket as Capped bucket.
-//    * A capped bucket is a special bucket where insertion order of documents is kept
-//    *
-//    * @param name name of the Couchbase bucket
-//    * @param max max number of element in the capped bucket
-//    * @param reaper activate reaper to delete elements when the capped bucket is full (ie. bigger than max)
-//    * @return a capped bucket
-//    */
-//  def cappedBucket(name: String, max: Int, reaper: Boolean): CappedBucket = CappedBucket(() => bucket(name), bucket(name).driver.executor(), max, reaper)
+  //  /**
+  //    *
+  //    * Provide a Bucket as Capped bucket.
+  //    * A capped bucket is a special bucket where insertion order of documents is kept
+  //    *
+  //    * @param name name of the Couchbase bucket
+  //    * @param max max number of element in the capped bucket
+  //    * @param reaper activate reaper to delete elements when the capped bucket is full (ie. bigger than max)
+  //    * @return a capped bucket
+  //    */
+  //  def cappedBucket(name: String, max: Int, reaper: Boolean): CappedBucket = CappedBucket(() => bucket(name), bucket(name).driver.executor(), max, reaper)
 
-//  /**
-//    *
-//    * Provide a Bucket as Capped bucket.
-//    * A capped bucket is a special bucket where insertion order of documents is kept
-//    *
-//    * @param name name of the Couchbase bucket
-//    * @param ec the ExecutionContext for async processing
-//    * @param max max number of element in the capped bucket
-//    * @param reaper activate reaper to delete elements when the capped bucket is full (ie. bigger than max)
-//    * @return a capped bucket
-//    */
-//  def cappedBucket(name: String, ec: ExecutionContext, max: Int, reaper: Boolean): CappedBucket = CappedBucket(() => bucket(name), ec, max, reaper)
+  //  /**
+  //    *
+  //    * Provide a Bucket as Capped bucket.
+  //    * A capped bucket is a special bucket where insertion order of documents is kept
+  //    *
+  //    * @param name name of the Couchbase bucket
+  //    * @param ec the ExecutionContext for async processing
+  //    * @param max max number of element in the capped bucket
+  //    * @param reaper activate reaper to delete elements when the capped bucket is full (ie. bigger than max)
+  //    * @return a capped bucket
+  //    */
+  //  def cappedBucket(name: String, ec: ExecutionContext, max: Int, reaper: Boolean): CappedBucket = CappedBucket(() => bucket(name), ec, max, reaper)
 
   /**
     *
@@ -258,9 +264,8 @@ class ReactiveCouchbaseDriver(as: ActorSystem, config: Configuration, log: Logge
   def shutdown() {
     buckets.foreach(t => {
       t._2.disconnect()
-      t._2.httpClient.close()
     })
-//    CappedBucket.clearCache()
+    //    CappedBucket.clearCache()
     system().terminate()
   }
 }

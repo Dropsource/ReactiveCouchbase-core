@@ -4,7 +4,7 @@ organization := "org.reactivecouchbase"
 
 isSnapshot := true
 
-version := "0.6-SNAPSHOT"
+version := "0.7-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
@@ -18,8 +18,9 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.couchbase.client" % "couchbase-client" % "1.4.11",
+//  "com.couchbase.client" % "couchbase-client" % "1.4.11",
   "com.couchbase.client" % "java-client" % "2.2.6",
+  "io.reactivex" %% "rxscala" % "0.25.1",
   "com.typesafe.akka" %% "akka-actor" % "2.4.3",
   "com.typesafe.play" %% "play-iteratees" % "2.4.6",
   "com.typesafe.play" %% "play-json" % "2.4.6",

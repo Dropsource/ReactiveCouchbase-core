@@ -1,9 +1,10 @@
+import com.couchbase.client.java.document.json.JsonObject
 import org.reactivecouchbase.ReactiveCouchbaseDriver
+import org.reactivecouchbase.observables._
 import org.scalatest.{BeforeAndAfterAll, MustMatchers, WordSpec}
-import org.specs2.mutable._
 import play.api.libs.iteratee.Enumerator
 
-import scala.concurrent._
+import scala.util.Try
 
 class StreamingSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
 
@@ -19,8 +20,8 @@ class StreamingSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
   )
 
   val persons = List(
-    Person("John", "Doe", 42) ,
-    Person("Jane", "Doe", 42) ,
+    Person("John", "Doe", 42),
+    Person("Jane", "Doe", 42),
     Person("Billy", "Doe", 42),
     Person("Bobby", "Doe", 42)
   )
@@ -31,16 +32,38 @@ class StreamingSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
     "person-4"
   )
 
+  override protected def beforeAll(): Unit = {
+
+    // Insert seed data
+    bucket.setStream[Person, JsonObject](Enumerator.enumerate(personsAndKeys)).await
+
+  }
+
+  override protected def afterAll(): Unit = {
+    driver.shutdown()
+  }
+
   "ReactiveCouchbase streaming API" should {
 
-    "insert streamed data" in {
-      Await.result(bucket.setStream(Enumerator.enumerate(personsAndKeys)).map { results =>
-        results.foreach(r => if (!r.isSuccess) failure(s"Can't persist element : ${r.getMessage}"))
-      }, timeout)
-      success
+    "add stream data" in {
+      Try(bucket.addStream[Person, JsonObject](Enumerator.enumerate(personsAndKeys)).await)
+
+      personsAndKeys.foreach { case (k, p) =>
+        bucket.get[Person](k).foreach { person =>
+          assert(person contains p)
+        }
+      }
     }
 
-    "fetch some data" in {
+    "delete stream data" in {
+      Try(bucket.deleteStream(Enumerator.enumerate(keys)).await)
+
+      keys.foreach { k =>
+        assert(bucket.get[Person](k).await.isEmpty, "Person object is not empty")
+      }
+    }
+
+    /*"fetch some data" in {
       keys.foreach { key =>
         val fut = bucket.get[Person](key).map { opt =>
           if (opt.isEmpty) {
@@ -66,26 +89,6 @@ class StreamingSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
         results.foreach(r => if (!r.isSuccess) failure(s"Can't delete element : ${r.getMessage}"))
       }, timeout)
       success
-    }
-
-    "add streamed data (again)" in {
-      Await.result(bucket.addStream(Enumerator.enumerate(personsAndKeys)).map { results =>
-        results.foreach(r => if (!r.isSuccess) failure(s"Can't persist element : ${r.getMessage}"))
-      }, timeout)
-      success
-    }
-
-    "delete some data (again)" in {
-      Await.result(bucket.deleteStream(Enumerator.enumerate(keys)).map { results =>
-        results.foreach(r => if (!r.isSuccess) failure(s"Can't delete element : ${r.getMessage}"))
-      }, timeout)
-      success
-    }
-
-    "shutdown now" in {
-      //Await.result(bucket.flush(), timeout)
-      driver.shutdown()
-      success
-    }
+    }*/
   }
 }

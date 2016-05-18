@@ -6,10 +6,10 @@ import akka.util.Timeout
 import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.error.DocumentDoesNotExistException
 import com.couchbase.client.java.{PersistTo, ReplicateTo}
-import org.reactivecouchbase.client.CouchbaseFutures._
 import org.reactivecouchbase.observables._
 import org.reactivecouchbase.{CouchbaseBucket, LoggerLike}
 import play.api.libs.json._
+import rx.lang.scala.JavaConversions._
 
 import scala.Some
 import scala.concurrent.duration._
@@ -109,10 +109,11 @@ private[reactivecouchbase] class AtomicActor[T] extends Actor {
               }*/
             }
           }
-          case Failure(ex: OperationStatusErrorNotFound) => {
+            // TODO not sure
+          /*case Failure(ex: OperationStatusErrorNotFound) => {
             sen ! Future.failed(new AtomicNoKeyFoundError[T](ar))
             self ! PoisonPill
-          }
+          }*/
           case r                                         => {
             // Too bad, the object is not locked and some else is working on it...
             // build a new atomic request
@@ -160,7 +161,7 @@ trait Atomic {
     * @return Cas value
     */
   def getAndLock[T](key: String, exp: Int)(implicit r: Reads[T], bucket: CouchbaseBucket, ec: ExecutionContext): Future[JsonDocument] = {
-    bucket.client.getAndLock(key, exp).toFuture
+    toScalaObservable(bucket.client.getAndLock(key, exp)).toFuture
   }
 
   /**
@@ -174,7 +175,7 @@ trait Atomic {
     * @return the operation status
     */
   def unlock(key: String, casId: Long)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Boolean] = {
-    bucket.client.unlock(key, casId).toFuture.map(_.booleanValue())
+    toScalaObservable(bucket.client.unlock(key, casId)).toFuture.map(_.booleanValue())
   }
 
   /**

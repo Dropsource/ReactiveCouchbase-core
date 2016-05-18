@@ -13,5 +13,5 @@ object Utils {
   implicit val testValueFmt = Json.format[TestValue]
   implicit val personFmt = Json.format[Person]
   implicit val ec = ExecutionContext.Implicits.global
-  val timeout = 10 seconds
+  implicit val timeout = 10 seconds
 }

@@ -6,6 +6,7 @@ import com.couchbase.client.java.{PersistTo, ReplicateTo}
 import org.reactivecouchbase.CouchbaseBucket
 import org.reactivecouchbase.observables._
 import play.api.libs.iteratee.{Enumerator, Iteratee}
+import rx.lang.scala.JavaConversions._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,11 +36,7 @@ trait Delete {
     * @return the operation status for the delete operation
     */
   def delete(key: String, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit bucket: CouchbaseBucket): Future[JsonDocument] =
-    bucket.client.remove(key, persistTo, replicateTo).toFuture
-
-  /*bucket.client.remove(key, persistTo, replicateTo).onErrorReturn(new SFunc1[Throwable, JsonDocument](throwable =>
-      new JsonDocument(key, new JsonObject().put("error", throwable.getMessage))
-    )).toFuture*/
+    toScalaObservable(bucket.client.remove(key, persistTo, replicateTo)).toFuture
 
   /**
     *

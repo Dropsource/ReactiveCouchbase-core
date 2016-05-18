@@ -27,11 +27,11 @@ trait BucketAPI {
     * @param viewName the name of the view
     * @param r Json reader for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T type of the doc
+    * @tparam I type of the Input
     * @return the list of docs
     */
-  def find[T](docName: String, viewName: String)(implicit r: Reads[T], ec: ExecutionContext): Future[List[T]] = {
-    Couchbase.find[T](ViewQuery.from(docName, viewName))(self, r, ec)
+  def find[I](docName: String, viewName: String)(implicit r: Reads[I], ec: ExecutionContext): Future[List[I]] = {
+    Couchbase.find[I](ViewQuery.from(docName, viewName))(self, r, ec)
   }
 
   /**
@@ -41,11 +41,11 @@ trait BucketAPI {
     * @param view the view to query
     * @param r Json reader for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T type of the doc
+    * @tparam I type of the Input
     * @return the list of docs
     */
-  def find[T](view: ViewQuery)(implicit r: Reads[T], ec: ExecutionContext): Future[List[T]] = {
-    Couchbase.find[T](view)(self, r, ec)
+  def find[I](view: ViewQuery)(implicit r: Reads[I], ec: ExecutionContext): Future[List[I]] = {
+    Couchbase.find[I](view)(self, r, ec)
   }
 
   /**
@@ -57,11 +57,11 @@ trait BucketAPI {
     * @param everyMillis repeat every ...
     * @param r Json reader for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T type of the doc
+    * @tparam I type of the doc
     * @return the query enumerator
     */
-  def pollQuery[T](doc: String, view: String, everyMillis: Long, filter: T => Boolean = { chunk: T => true })(implicit r: Reads[T], ec: ExecutionContext): Enumerator[T] = {
-    Couchbase.pollQuery[T](ViewQuery.from(doc, view), everyMillis, filter)(self, r, ec)
+  def pollQuery[I](doc: String, view: String, everyMillis: Long, filter: I => Boolean = { chunk: I => true })(implicit r: Reads[I], ec: ExecutionContext): Enumerator[I] = {
+    Couchbase.pollQuery[I](ViewQuery.from(doc, view), everyMillis, filter)(self, r, ec)
   }
 
   /**
@@ -73,11 +73,11 @@ trait BucketAPI {
     * @param filter the filter for documents selection
     * @param r Json reader for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T type of the doc
+    * @tparam I type of the doc
     * @return the query enumerator
     */
-  def repeatQuery[T](doc: String, view: String, filter: T => Boolean = { chunk: T => true }, trigger: Future[AnyRef] = Future.successful(Some))(implicit r: Reads[T], ec: ExecutionContext): Enumerator[T] = {
-    Couchbase.repeatQuery[T](ViewQuery.from(doc, view), trigger, filter)(self, r, ec)
+  def repeatQuery[I](doc: String, view: String, filter: I => Boolean = { chunk: I => true }, trigger: Future[AnyRef] = Future.successful(Some))(implicit r: Reads[I], ec: ExecutionContext): Enumerator[I] = {
+    Couchbase.repeatQuery[I](ViewQuery.from(doc, view), trigger, filter)(self, r, ec)
   }
 
 //  /**
@@ -114,10 +114,10 @@ trait BucketAPI {
     *
     * @param keysEnumerator stream of keys
     * @param r Json reader
-    * @tparam T type of the doc
+    * @tparam I type of the input
     * @return
     */
-  def fetch[T](keysEnumerator: Enumerator[String])(implicit r: Reads[T], ec: ExecutionContext): QueryEnumerator[(String, T)] = Couchbase.fetch[T](keysEnumerator)(this, r, ec)
+  def fetch[I](keysEnumerator: Enumerator[String])(implicit r: Reads[I], ec: ExecutionContext): QueryEnumerator[(String, I)] = Couchbase.fetch[I](keysEnumerator)(this, r, ec)
 
   /**
     *
@@ -125,10 +125,10 @@ trait BucketAPI {
     *
     * @param keysEnumerator stream of keys
     * @param r Json reader
-    * @tparam T type of the doc
+    * @tparam I type of the input
     * @return
     */
-  def fetchValues[T](keysEnumerator: Enumerator[String])(implicit r: Reads[T], ec: ExecutionContext): QueryEnumerator[T] = Couchbase.fetchValues[T](keysEnumerator)(this, r, ec)
+  def fetchValues[I](keysEnumerator: Enumerator[String])(implicit r: Reads[I], ec: ExecutionContext): QueryEnumerator[I] = Couchbase.fetchValues[I](keysEnumerator)(this, r, ec)
 
   /**
     *
@@ -136,10 +136,10 @@ trait BucketAPI {
     *
     * @param keys the key of the documents
     * @param r Json reader
-    * @tparam T type of the doc
+    * @tparam I type of the input
     * @return
     */
-  def fetch[T](keys: Seq[String])(implicit r: Reads[T], ec: ExecutionContext): QueryEnumerator[(String, T)] = Couchbase.fetch[T](keys)(this, r, ec)
+  def fetch[I](keys: Seq[String])(implicit r: Reads[I], ec: ExecutionContext): QueryEnumerator[(String, I)] = Couchbase.fetch[I](keys)(this, r, ec)
 
 
   /**
@@ -148,10 +148,10 @@ trait BucketAPI {
     *
     * @param keys the key of the documents
     * @param r Json reader
-    * @tparam T type of the doc
+    * @tparam I type of the input
     * @return
     */
-  def fetchValues[T](keys: Seq[String])(implicit r: Reads[T], ec: ExecutionContext): QueryEnumerator[T] = Couchbase.fetchValues[T](keys)(this, r, ec)
+  def fetchValues[I](keys: Seq[String])(implicit r: Reads[I], ec: ExecutionContext): QueryEnumerator[I] = Couchbase.fetchValues[I](keys)(this, r, ec)
 
   /**
     *
@@ -307,24 +307,35 @@ trait BucketAPI {
     * @tparam T type of the doc
     * @return
     */
-  def get[T](key: String)(implicit r: Reads[T], ec: ExecutionContext): Future[Option[T]] = {
+  def get[T](key: String)(implicit r: Reads[T], ec: ExecutionContext): Future[Option[T]] =
     Couchbase.get[T](key)(self, r, ec)
-  }
 
   /**
-    *
-    *
-    *
+    * Get Binary Blob
     * @param key
     * @param ec
     * @return
     */
-  def getBinaryBlob(key: String)(implicit ec: ExecutionContext): Future[Option[String]] = {
-    Couchbase.getBinaryBlob(key)(self, ec).map {
-      case s: String => Some(s)
-      case _         => None
-    }
-  }
+  def getBinaryBlob(key: String)(implicit ec: ExecutionContext): Future[Option[String]] =
+    Couchbase.getBinaryBlob(key)(self, ec)
+
+  /**
+    * Get String Blob
+    * @param key
+    * @param ec
+    * @return
+    */
+  def getStringBlob(key: String)(implicit ec: ExecutionContext): Future[Option[String]] =
+    Couchbase.getStringBlob(key)(self, ec)
+
+  /**
+    * Get String Blob
+    * @param key
+    * @param ec
+    * @return
+    */
+  def getLong(key: String)(implicit ec: ExecutionContext): Future[Option[Long]] =
+    Couchbase.getLong(key)(self, ec)
 
 //  def getInt(key: String)(implicit ec: ExecutionContext): Future[Int] = Couchbase.getInt(key)(self, ec)
 
@@ -343,7 +354,8 @@ trait BucketAPI {
     * @param ec ExecutionContext for async processing
     * @return
     */
-  def incr(key: String, by: Long)(implicit ec: ExecutionContext): Future[Long] = Couchbase.incr(key, by)(self, ec)
+  def incr(key: String, by: Long)(implicit ec: ExecutionContext): Future[Option[Long]] =
+    Couchbase.incr(key, by)(self, ec)
 
 
 //  /**
@@ -499,11 +511,12 @@ trait BucketAPI {
     * @param replicateTo replication flag
     * @param w Json writer for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T the type of the doc
+    * @tparam I the type of input
+    * @tparam O the type of output
     * @return the operation status
     */
-  def add[T, D](key: String, value: T, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[T], ec: ExecutionContext): Future[Document[D]] = {
-    Couchbase.add[T, D](key, value, exp, persistTo, replicateTo)(self, w, ec)
+  def add[I, O](key: String, value: I, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[I], ec: ExecutionContext): Future[Document[O]] = {
+    Couchbase.add[I, O](key, value, exp, persistTo, replicateTo)(self, w, ec)
   }
 
   /**
@@ -516,11 +529,12 @@ trait BucketAPI {
     * @param replicateTo replication flag
     * @param w Json writer for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T the type of the doc
+    * @tparam I the type of input
+    * @tparam O the type of output
     * @return the operation status
     */
-  def addStream[T, D](data: Enumerator[(String, T)], exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[T], ec: ExecutionContext): Future[List[Document[D]]] = {
-    Couchbase.addStream[T, D](data, exp, persistTo, replicateTo)(self, w, ec)
+  def addStream[I, O](data: Enumerator[(String, I)], exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[I], ec: ExecutionContext): Future[List[Document[O]]] = {
+    Couchbase.addStream[I, O](data, exp, persistTo, replicateTo)(self, w, ec)
   }
 
   /**
@@ -565,11 +579,12 @@ trait BucketAPI {
     * @param replicateTo replication flag
     * @param w Json writer for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T the type of the doc
+    * @tparam I the type of input
+    * @tparam O the type of output
     * @return the operation status
     */
-  def replace[T, D](key: String, value: T, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[T], ec: ExecutionContext): Future[Document[D]] = {
-    Couchbase.replace[T, D](key, value, exp, persistTo, replicateTo)(self, w, ec)
+  def replace[I, O](key: String, value: I, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[I], ec: ExecutionContext): Future[Document[O]] = {
+    Couchbase.replace[I, O](key, value, exp, persistTo, replicateTo)(self, w, ec)
   }
 
   /**
@@ -582,11 +597,12 @@ trait BucketAPI {
     * @param replicateTo replication flag
     * @param w Json writer for type T
     * @param ec ExecutionContext for async processing
-    * @tparam T the type of the doc
+    * @tparam I the type of input
+    * @tparam O the type of output
     * @return the operation status
     */
-  def replaceStream[T, D](data: Enumerator[(String, T)], exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[T], ec: ExecutionContext): Future[List[Document[D]]] = {
-    Couchbase.replaceStream[T, D](data, exp, persistTo, replicateTo)(self, w, ec)
+  def replaceStream[I, O](data: Enumerator[(String, I)], exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit w: Writes[I], ec: ExecutionContext): Future[List[Document[O]]] = {
+    Couchbase.replaceStream[I, O](data, exp, persistTo, replicateTo)(self, w, ec)
   }
 
   /**
@@ -685,12 +701,12 @@ trait BucketAPI {
   //  Couchbase.atomicallyUpdate[T](key, persistTo, replicateTo)(operation)(self, ec, r, w)
   //}
 
-  def atomicallyUpdate[T](key: String, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(operation: T => Future[T])(implicit ec: ExecutionContext, r: Reads[T], w: Writes[T]): Future[T] = {
-    Couchbase.atomicallyUpdate[T](key, exp, persistTo, replicateTo)(operation)(self, ec, r, w)
+  def atomicallyUpdate[I](key: String, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(operation: I => Future[I])(implicit ec: ExecutionContext, r: Reads[I], w: Writes[I]): Future[I] = {
+    Couchbase.atomicallyUpdate[I](key, exp, persistTo, replicateTo)(operation)(self, ec, r, w)
   }
 
-  def atomicUpdate[T](key: String, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(operation: T => T)(implicit ec: ExecutionContext, r: Reads[T], w: Writes[T]): Future[T] = {
-    Couchbase.atomicUpdate[T](key, exp, persistTo, replicateTo)(operation)(self, ec, r, w)
+  def atomicUpdate[I](key: String, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(operation: I => I)(implicit ec: ExecutionContext, r: Reads[I], w: Writes[I]): Future[I] = {
+    Couchbase.atomicUpdate[I](key, exp, persistTo, replicateTo)(operation)(self, ec, r, w)
   }
 
 }

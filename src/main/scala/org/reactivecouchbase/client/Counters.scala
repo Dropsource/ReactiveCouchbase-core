@@ -1,18 +1,19 @@
 package org.reactivecouchbase.client
 
-import com.couchbase.client.java.document.JsonLongDocument
-import com.couchbase.client.java.error.DocumentDoesNotExistException
+import com.couchbase.client.java.document.json.JsonObject
+import com.couchbase.client.java.document.{JsonDocument, JsonLongDocument}
 import org.reactivecouchbase.CouchbaseBucket
 import org.reactivecouchbase.observables._
-import play.api.libs.json.JsNumber
-import rx.Observable
+import rx.lang.scala.JavaConversions._
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Trait for number operations
   */
 trait Counters {
+
 
   /**
     * Increment an Int
@@ -23,14 +24,15 @@ trait Counters {
     * @param ec ExecutionContext for async processing
     * @return
     */
-  def incr(key: String, by: Long)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Long] = {
-    bucket.client.counter(key, by)
-    /*.onErrorReturn(new SFunc1[Throwable, JsonLongDocument]({
-      case de: DocumentDoesNotExistException => null
-      case e: Exception => throw e
-    }))*/
-    .toFuture.map {
-      case l: JsonLongDocument => l.content()
+  def incr(key: String, by: Long)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Option[Long]] = {
+    toScalaObservable(bucket.client.counter(key, by))
+    .onErrorReturn(t => JsonDocument.create("__failure__", JsonObject.from(Map("error" -> t.toString).asJava)))
+    .toFuture
+    .map {
+      case l: JsonLongDocument =>
+        Some(l.content())
+      case err: JsonDocument if err.id() == "__failure__" =>
+        None
     }
   }
 

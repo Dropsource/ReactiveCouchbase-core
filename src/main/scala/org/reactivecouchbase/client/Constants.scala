@@ -1,6 +1,6 @@
 package org.reactivecouchbase.client
 
-import net.spy.memcached.{ReplicateTo, PersistTo}
+import com.couchbase.client.java.{ReplicateTo, PersistTo}
 
 /**
  * Some constants
@@ -15,10 +15,10 @@ object Constants {
   /**
    * Standard PersistTo
    */
-  implicit val defaultPersistTo: PersistTo = PersistTo.ZERO
+  implicit val defaultPersistTo: PersistTo = PersistTo.NONE
 
   /**
    * Standard ReplicateTo
    */
-  implicit val defaultReplicateTo: ReplicateTo = ReplicateTo.ZERO
+  implicit val defaultReplicateTo: ReplicateTo = ReplicateTo.NONE
 }

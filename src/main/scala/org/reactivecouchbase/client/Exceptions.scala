@@ -1,8 +1,6 @@
 package org.reactivecouchbase.client
 
-import play.api.libs.json.{Json, JsObject}
-import net.spy.memcached.ops.OperationStatus
-import java.lang.RuntimeException
+import play.api.libs.json.{JsObject, Json}
 
 /**
  *
@@ -12,14 +10,6 @@ import java.lang.RuntimeException
  * @param errors
  */
 class JsonValidationException(message: String, errors: JsObject) extends ReactiveCouchbaseException("Json Validation failed", message + " : " + Json.stringify(errors))
-
-/**
- *
- * When a Couchbase operation fails
- *
- * @param status
- */
-class OperationFailedException(status: OperationStatus) extends ReactiveCouchbaseException("Operation failed", status.getMessage)
 
 /**
  *

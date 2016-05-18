@@ -9,6 +9,7 @@ import org.reactivecouchbase.observables._
 import org.reactivecouchbase.{Couchbase, CouchbaseBucket}
 import play.api.libs.iteratee.{Enumerator, Iteratee}
 import play.api.libs.json._
+import rx.lang.scala.JavaConversions._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -49,7 +50,8 @@ trait Write {
     * @return the operation status
     */
   def set[T, D](key: String, value: T, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit bucket: CouchbaseBucket, w: Writes[T], ec: ExecutionContext): Future[Document[D]] =
-    bucket.client.upsert(convertType[T, D](key, value), persistTo, replicateTo).toFuture
+    toScalaObservable(bucket.client.upsert(convertType[T, D](key, value), persistTo, replicateTo))
+    .toFuture
 
   /**
     *
@@ -102,7 +104,7 @@ trait Write {
       case o: JsObject                          => JsonDocument.create(key, JsonObject.fromJson(o.toString()), exp)
     }
 
-    bucket.client.insert(formattedValue, persistTo, replicateTo).toFuture.collect {
+    toScalaObservable(bucket.client.insert(formattedValue, persistTo, replicateTo)).toFuture.collect {
       case d: Document[D]@unchecked => d
     }
   }
@@ -120,7 +122,7 @@ trait Write {
     * @return the operation status
     */
   def addBinaryBlob(key: String, value: String, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Document[ByteBuf]] = {
-    bucket.client.insert(BinaryDocument.create(key, Unpooled.copiedBuffer(value, CharsetUtil.UTF_8), exp), persistTo, replicateTo).toFuture
+    toScalaObservable(bucket.client.insert(BinaryDocument.create(key, Unpooled.copiedBuffer(value, CharsetUtil.UTF_8), exp), persistTo, replicateTo)).toFuture
   }
 
   /**
@@ -136,7 +138,7 @@ trait Write {
     * @return the operation status
     */
   def addStringBlob(key: String, value: String, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Document[String]] = {
-    bucket.client.insert(StringDocument.create(key, value, exp), persistTo, replicateTo).toFuture
+    toScalaObservable(bucket.client.insert(StringDocument.create(key, value, exp), persistTo, replicateTo)).toFuture
   }
 
   /**
@@ -197,7 +199,7 @@ trait Write {
     * @return the operation status
     */
   def replace[T, D](key: String, value: T, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit bucket: CouchbaseBucket, w: Writes[T], ec: ExecutionContext): Future[Document[D]] =
-    bucket.client.replace(convertType[T, D](key, value, exp), persistTo, replicateTo).toFuture
+    toScalaObservable(bucket.client.replace(convertType[T, D](key, value, exp), persistTo, replicateTo)).toFuture
 
   /**
     *
@@ -209,12 +211,11 @@ trait Write {
     * @param persistTo persistence flag
     * @param replicateTo replication flag
     * @param bucket the bucket to use
-    * @param w Json writer for type T
     * @param ec ExecutionContext for async processing
     * @return the operation status
     */
   def replaceBinaryBlob(key: String, value: String, exp: Long = Constants.expiration, persistTo: PersistTo = PersistTo.NONE, replicateTo: ReplicateTo = ReplicateTo.NONE)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Document[ByteBuf]] = {
-    bucket.client.replace(BinaryDocument.create(key, Unpooled.copiedBuffer(value, CharsetUtil.UTF_8), exp), persistTo, replicateTo).toFuture
+    toScalaObservable(bucket.client.replace(BinaryDocument.create(key, Unpooled.copiedBuffer(value, CharsetUtil.UTF_8), exp), persistTo, replicateTo)).toFuture
   }
 
   /**
@@ -246,6 +247,6 @@ trait Write {
     * @return the operation status
     */
   def flush()(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Boolean] = {
-    bucket.client.bucketManager().toFuture.map(_.flush().toBlocking.single())
+    toScalaObservable(bucket.client.bucketManager()).toFuture.map(m => toScalaObservable(m.flush()).toBlocking.single)
   }
 }

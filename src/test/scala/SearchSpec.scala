@@ -6,7 +6,7 @@ import scala.collection.JavaConversions._
 
 import scala.concurrent._
 import scala.util.Try
-
+import org.reactivecouchbase.observables._
 class SearchSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
 
   import Utils._
@@ -17,8 +17,8 @@ class SearchSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
   override protected def beforeAll(): Unit = {
 
     // Clear out DB
-    Try(Await.result(bucket.flush(), timeout))
-    Try(Await.result(bucket.deleteDesignDoc("persons"), timeout))
+    Try(bucket.flush().await)
+    Try(bucket.deleteDesignDoc("persons").await)
 
 
     // Create design doc
@@ -28,18 +28,18 @@ class SearchSpec extends WordSpec with MustMatchers with BeforeAndAfterAll {
       DefaultView.create("by_age", "function (doc, meta) { emit(doc.age, null); }")
     ))
 
-    Await.result(bucket.createDesignDoc(designDoc), timeout)
+    bucket.createDesignDoc(designDoc).await
 
     // Insert seed data
     for (i <- 0 to 99) {
-      Await.result(bucket.add[Person, JsonObject](s"person--$i", Person("Billy", s"Doe-$i", i)), timeout)
+      bucket.add[Person, JsonObject](s"person--$i", Person("Billy", s"Doe-$i", i)).await
     }
   }
 
   override protected def afterAll(): Unit = {
-    Await.result(bucket.deleteDesignDoc("persons"), timeout)
+    bucket.deleteDesignDoc("persons").await
     for (i <- 0 to 99) {
-      Await.result(bucket.delete(s"person--$i"), timeout)
+      bucket.delete(s"person--$i").await
     }
 
     driver.shutdown()

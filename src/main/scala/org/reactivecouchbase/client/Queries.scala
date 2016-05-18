@@ -2,31 +2,18 @@ package org.reactivecouchbase.client
 
 import java.util.concurrent.TimeUnit
 
-import com.couchbase.client.java.document.{JsonDocument, Document}
+import com.couchbase.client.java.document.JsonDocument
 import com.couchbase.client.java.view._
 import org.reactivecouchbase.observables._
 import org.reactivecouchbase.{CouchbaseBucket, Timeout}
 import play.api.libs.iteratee.{Enumeratee, Enumerator, Iteratee}
 import play.api.libs.json.{JsSuccess, _}
-import rx.Observable
+import rx.lang.scala.JavaConversions._
 
 import scala.Some
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-
-/**
-  *
-  * Raw row query result
-  *
-  * @param document the document
-  * @param id the documents key
-  * @param key the documents indexed key
-  * @param value the documents indexed value
-  */
-case class RawRow(document: Option[Observable[Document[_]]], id: Option[String], key: String, value: String) {
-  def toTuple = (document, id, key, value)
-}
 
 /**
   *
@@ -136,10 +123,8 @@ trait Queries {
     * @return the query enumerator
     */
   def rawSearch(viewQuery: ViewQuery)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): QueryEnumerator[AsyncViewRow] = {
-    QueryEnumerator(() => bucket.client.query(viewQuery).toFuture.flatMap { results =>
-      results.rows().toList.toFuture.map { rows =>
-        Enumerator.enumerate(rows.asScala.iterator)
-      }
+    QueryEnumerator(() => toScalaObservable(bucket.client.query(viewQuery)).flatMap(_.rows().toList).toFuture.map { rows =>
+      Enumerator.enumerate(rows.asScala.iterator)
     })
   }
 
@@ -155,13 +140,13 @@ trait Queries {
     * @return the query enumerator
     */
   def search[T](view: ViewQuery)(implicit bucket: CouchbaseBucket, r: Reads[T], ec: ExecutionContext): QueryEnumerator[TypedRow[T]] = {
-    QueryEnumerator(() => rawSearch(view)(bucket, ec).toEnumerator.map { enumerator =>
+    QueryEnumerator(() => rawSearch(view.includeDocs(true))(bucket, ec).toEnumerator.map { enumerator =>
       enumerator &>
         Enumeratee.map[AsyncViewRow] { row =>
           Try(row.document.toBlocking.first()) match {
             case Success(doc: JsonDocument) =>
               JsRow[T](r.reads(Json.parse(doc.content().toString)), Option(row.id), row.key().toString, Option(row.value).fold("")(_.toString))
-            case Failure(exc) =>
+            case Failure(exc)               =>
               JsRow[T](JsError(), Option(row.id()), row.key().toString, row.value().toString)
           }
         } &>
@@ -307,8 +292,8 @@ trait Queries {
     * @return fetch design doc
     */
   def designDocument(docName: String, development: Boolean = false)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[DesignDocument] = {
-    bucket.client.bucketManager().toFuture.flatMap { manager =>
-      manager.getDesignDocument(docName, development).toFuture
+    toScalaObservable(bucket.client.bucketManager()).toFuture.flatMap { manager =>
+      toScalaObservable(manager.getDesignDocument(docName, development)).toFuture
     }
   }
 
@@ -322,8 +307,8 @@ trait Queries {
     * @return the operation status
     */
   def createDesignDoc(designDoc: DesignDocument, development: Boolean)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[DesignDocument] =
-    bucket.client.bucketManager().toFuture.flatMap { manager =>
-      manager.insertDesignDocument(designDoc, development).toFuture
+    toScalaObservable(bucket.client.bucketManager()).toFuture.flatMap { manager =>
+      toScalaObservable(manager.insertDesignDocument(designDoc, development)).toFuture
     }
 
   /**
@@ -336,7 +321,7 @@ trait Queries {
     * @return the operation status
     */
   def deleteDesignDoc(name: String, development: Boolean)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): Future[Boolean] =
-    bucket.client.bucketManager().toFuture.flatMap { manager =>
-      manager.removeDesignDocument(name, development).toFuture.map(_.booleanValue())
+    toScalaObservable(bucket.client.bucketManager()).toFuture.flatMap { manager =>
+      toScalaObservable(manager.removeDesignDocument(name, development)).toFuture.map(_.booleanValue())
     }
 }
