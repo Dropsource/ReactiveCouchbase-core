@@ -1,17 +1,16 @@
 package org.reactivecouchbase.client
 
-import play.api.libs.json._
-import scala.concurrent.{ExecutionContext, Future}
-import play.api.libs.iteratee.{Enumeratee, Iteratee, Enumerator}
-import com.couchbase.client.protocol.views._
-import org.reactivecouchbase.{Timeout, Couchbase, CouchbaseBucket}
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
+
+import com.couchbase.client.protocol.views._
 import org.reactivecouchbase.client.CouchbaseFutures._
-import collection.JavaConversions._
-import org.reactivecouchbase.experimental.Views
-import play.api.libs.json.JsSuccess
+import org.reactivecouchbase.{Couchbase, CouchbaseBucket, Timeout}
+import play.api.libs.iteratee.{Enumeratee, Enumerator, Iteratee}
+import play.api.libs.json.{JsObject, JsSuccess, _}
+
 import scala.Some
-import play.api.libs.json.JsObject
+import scala.collection.JavaConversions._
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  *
@@ -169,9 +168,6 @@ trait Queries {
    * @return the query enumerator
    */
   def rawSearch(view: View)(query: Query)(implicit bucket: CouchbaseBucket, ec: ExecutionContext): QueryEnumerator[RawRow] = {
-    if (bucket.useExperimentalQueries) {
-      Views.internalCompatRawSearch(view, query, bucket, ec)
-    } else {
       QueryEnumerator(() => waitForHttp[ViewResponse]( bucket.couchbaseClient.asyncQuery(view, query), bucket, ec ).map { results =>
         Enumerator.enumerate(results.iterator()) &> Enumeratee.map[ViewRow] {
           case r: ViewRowWithDocs if query.willIncludeDocs() => RawRow(Option(r.getDocument.asInstanceOf[String]), Option(r.getId), r.getKey, r.getValue)
@@ -183,7 +179,6 @@ trait Queries {
           case r: SpatialViewRowWithDocs if !query.willIncludeDocs() => RawRow(None, Option(r.getId), r.getKey, r.getValue)
         }
       })
-    }
   }
 
   /**

@@ -1,18 +1,19 @@
 package org.reactivecouchbase
 
-import com.couchbase.client.{ CouchbaseConnectionFactoryBuilder, CouchbaseClient }
 import java.net.URI
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
-import net.spy.memcached.metrics.{AbstractMetricCollector, DefaultMetricCollector, MetricType}
 
-import collection.JavaConversions._
-import collection.mutable.ArrayBuffer
-import scala.concurrent.ExecutionContext
 import akka.actor.{Scheduler, ActorSystem}
-import org.reactivecouchbase.client._
-import com.typesafe.config.{Config, ConfigFactory}
+import com.couchbase.client.{CouchbaseClient, CouchbaseConnectionFactoryBuilder}
 import com.ning.http.client.{AsyncHttpClient, AsyncHttpClientConfig}
+import com.typesafe.config.{Config, ConfigFactory}
+import net.spy.memcached.metrics.{AbstractMetricCollector, MetricType}
+import org.reactivecouchbase.client._
 import org.reactivecouchbase.experimental.CappedBucket
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.ExecutionContext
 
 /**
  *
